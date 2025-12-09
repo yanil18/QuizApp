@@ -8,6 +8,69 @@
     <link rel="stylesheet" th:href="@{/CSS/CdnCSS/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/CSS/CdnCSS/all.min.css}">
     <link rel="stylesheet" th:href="@{/CSS/Custom/Custom_first.css}">
+    <style>
+    .single-question { display: none; }
+
+.timer-display-modern {
+    position: fixed;
+    right: 30px;
+    top: 20px;
+    padding: 10px 18px;
+    background: #2e0f73;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+/* Submit modal */
+.submit-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display:flex; justify-content:center; align-items:center;
+}
+
+.modal-box {
+    padding: 30px;
+    background: white;
+    width: 450px;
+    border-radius: 12px;
+}
+
+.attempt-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.circle {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    background: #ffef9f;
+    display:flex; justify-content:center; align-items:center;
+    font-weight: bold;
+}
+
+.circle.attempted {
+    background: #8fda73;
+}
+
+.box {
+    width: 20px; height: 20px;
+    display:inline-block;
+    margin-right: 6px;
+}
+
+.attempted-box { background:#8fda73; }
+.not-box { background:#ffef9f; }
+
+    </style>
 </head>
 <body style="background: #f9fafb;">
     
@@ -59,56 +122,108 @@
         </div>
 
         <!-- Timer -->
-        <div class="timer-display" id="timerDisplay">
-            <div class="timer-label">Time Remaining</div>
-            <div class="timer-value" id="timerValue">00:00</div>
-        </div>
+      <div class="timer-display-modern">
+                <i class="fas fa-clock"></i>
+                <span id="timerValue">10:00</span>
+            </div>
 
         <!-- Questions Form -->
-        <form id="quizForm">
-            <input type="hidden" id="quizId" th:value="${quiz.id}">
-            
-            <div th:each="question, iterStat : ${questions}" class="question-card">
-                <span class="question-number" th:text="'Question ' + (${iterStat.index} + 1)">Question 1</span>
-                <div class="question-text" th:text="${question.questionText}">Question text here</div>
-                
-                <div class="options-container">
-                    <label class="option-item" th:attr="data-question=${question.id}">
-                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'A'" required>
-                        <span class="option-label">A.</span>
-                        <span class="option-text" th:text="${question.optionA}">Option A</span>
-                    </label>
-                    
-                    <label class="option-item" th:attr="data-question=${question.id}">
-                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'B'" required>
-                        <span class="option-label">B.</span>
-                        <span class="option-text" th:text="${question.optionB}">Option B</span>
-                    </label>
-                    
-                    <label class="option-item" th:attr="data-question=${question.id}">
-                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'C'" required>
-                        <span class="option-label">C.</span>
-                        <span class="option-text" th:text="${question.optionC}">Option C</span>
-                    </label>
-                    
-                    <label class="option-item" th:attr="data-question=${question.id}">
-                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'D'" required>
-                        <span class="option-label">D.</span>
-                        <span class="option-text" th:text="${question.optionD}">Option D</span>
-                    </label>
-                </div>
-            </div>
+     <form id="quizForm">
+    <input type="hidden" id="quizId" th:value="${quiz.id}">
+    
+    <div id="questionWrapper">
 
-            <div class="submit-section">
-                <button type="submit" class="btn-submit-quiz">
-                    <i class="fas fa-check-circle"></i> Submit Quiz
-                </button>
+        <div th:each="question, iterStat : ${questions}"
+             class="question-card single-question"
+             th:attr="data-index=${iterStat.index}">
+             
+            <span class="question-number"
+                  th:text="'Question ' + (${iterStat.index} + 1)">Question 1</span>
+
+            <div class="question-text" th:text="${question.questionText}"></div>
+
+            <div class="options-container">
+                <label class="option-item" th:attr="data-question=${question.id}">
+                    <input type="radio" th:name="'question_' + ${question.id}" th:value="'A'">
+                    <span class="option-label">A.</span>
+                    <span th:text="${question.optionA}"></span>
+                </label>
+
+                <label class="option-item" th:attr="data-question=${question.id}">
+                    <input type="radio" th:name="'question_' + ${question.id}" th:value="'B'">
+                    <span class="option-label">B.</span>
+                    <span th:text="${question.optionB}"></span>
+                </label>
+
+                <label class="option-item" th:attr="data-question=${question.id}">
+                    <input type="radio" th:name="'question_' + ${question.id}" th:value="'C'">
+                    <span class="option-label">C.</span>
+                    <span th:text="${question.optionC}"></span>
+                </label>
+
+                <label class="option-item" th:attr="data-question=${question.id}">
+                    <input type="radio" th:name="'question_' + ${question.id}" th:value="'D'">
+                    <span class="option-label">D.</span>
+                    <span th:text="${question.optionD}"></span>
+                </label>
             </div>
-        </form>
+        </div>
+
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="question-nav">
+        <button type="button" id="prevBtn" class="btn btn-secondary" disabled>
+            ← Previous
+        </button>
+
+        <button type="button" id="nextBtn" class="btn btn-primary">
+            Next →
+        </button>
+
+        <button type="button" id="submitBtn" class="btn btn-success" style="display:none;">
+            Submit Quiz
+        </button>
+    </div>
+</form>
+
     </div>
 
     <script th:src="@{/JS/CdnJS/jquery-3.3.1.min.js}"></script>
     <script th:src="@{/JS/CdnJS/bootstrap.bundle.min.js}"></script>
+    <script>
+let currentIndex = 0;
+const questions = document.querySelectorAll('.single-question');
+questions.forEach(q => q.style.display = 'none');
+questions[0].style.display = 'block';
+
+function updateButtons() {
+    document.getElementById("prevBtn").disabled = currentIndex === 0;
+
+    if (currentIndex === questions.length - 1) {
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("submitBtn").style.display = "inline-block";
+    } else {
+        document.getElementById("nextBtn").style.display = "inline-block";
+        document.getElementById("submitBtn").style.display = "none";
+    }
+}
+updateButtons();
+
+document.getElementById("nextBtn").onclick = function () {
+    questions[currentIndex].style.display = "none";
+    currentIndex++;
+    questions[currentIndex].style.display = "block";
+    updateButtons();
+};
+
+document.getElementById("prevBtn").onclick = function () {
+    questions[currentIndex].style.display = "none";
+    currentIndex--;
+    questions[currentIndex].style.display = "block";
+    updateButtons();
+};
+    </script>
     <script th:inline="javascript">
         const durationMinutes = /*[[${quiz.durationMinutes}]]*/ 10;
         let timeRemaining = durationMinutes * 60;
@@ -232,6 +347,54 @@
         startTimer();
         updateTimerDisplay()
     </script>
+    <script>
+document.getElementById("submitBtn").onclick = function () {
+
+    let modal = document.createElement("div");
+    modal.className = "submit-modal";
+
+    let totalQ = questions.length;
+    let attempted = 0;
+
+    document.querySelectorAll("input[type=radio]:checked").forEach(() => attempted++);
+
+    modal.innerHTML = `
+        <div class="modal-box">
+            <h3>Want to submit the quiz?</h3>
+
+            <div class="attempt-grid">
+                ${[...Array(totalQ)].map((_, i) => `
+                    <div class="circle ${isAttempted(i) ? 'attempted' : ''}">
+                        ${i + 1}
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="legend">
+                <span class="box attempted-box"></span> Attempted
+                <span class="box not-box"></span> Not Attempted
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="this.parentNode.parentNode.remove()">No</button>
+                <button class="btn btn-success" id="finalSubmit">Yes</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("finalSubmit").onclick = function () {
+        document.getElementById("quizForm").submit();
+    };
+};
+
+function isAttempted(i) {
+    const q = questions[i];
+    return q.querySelector("input[type=radio]:checked") !== null;
+}
+</script>
+
     
     <!-- Footer (Same as Home Page) -->
     <footer>
