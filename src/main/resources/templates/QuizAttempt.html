@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${quiz.quizName}">Quiz</title>
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/all.min.css}">
+    <link rel="stylesheet" th:href="@{/CSS/Custom/Custom_first.css}">
+</head>
+<body style="background: #f9fafb;">
+    
+    <!-- Navigation (Same as Home Page) -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <div class="brand-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                QuizApp
+            </a>
+            
+            <!-- Show user info when logged in -->
+            <div class="d-flex gap-2 align-items-center">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle"></i> 
+                    Welcome, <span sec:authentication="principal.username">User</span>!
+                </span>
+                <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="quiz-attempt-container"></div>
+        <!-- Quiz Header -->
+        <div class="quiz-attempt-header">
+            <h1 class="quiz-attempt-title" th:text="${quiz.quizName}">Quiz Name</h1>
+            <div class="quiz-meta">
+                <div class="meta-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span th:text="${quiz.totalQuestions} + ' Questions'">20 Questions</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-star"></i>
+                    <span th:text="${quiz.totalMarks} + ' Marks'">20 Marks</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-clock"></i>
+                    <span th:text="${quiz.durationMinutes} + ' Minutes'">10 Minutes</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-tag"></i>
+                    <span th:text="${quiz.quizType}">Exam</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-label">Time Remaining</div>
+            <div class="timer-value" id="timerValue">00:00</div>
+        </div>
+
+        <!-- Questions Form -->
+        <form id="quizForm">
+            <input type="hidden" id="quizId" th:value="${quiz.id}">
+            
+            <div th:each="question, iterStat : ${questions}" class="question-card">
+                <span class="question-number" th:text="'Question ' + (${iterStat.index} + 1)">Question 1</span>
+                <div class="question-text" th:text="${question.questionText}">Question text here</div>
+                
+                <div class="options-container">
+                    <label class="option-item" th:attr="data-question=${question.id}">
+                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'A'" required>
+                        <span class="option-label">A.</span>
+                        <span class="option-text" th:text="${question.optionA}">Option A</span>
+                    </label>
+                    
+                    <label class="option-item" th:attr="data-question=${question.id}">
+                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'B'" required>
+                        <span class="option-label">B.</span>
+                        <span class="option-text" th:text="${question.optionB}">Option B</span>
+                    </label>
+                    
+                    <label class="option-item" th:attr="data-question=${question.id}">
+                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'C'" required>
+                        <span class="option-label">C.</span>
+                        <span class="option-text" th:text="${question.optionC}">Option C</span>
+                    </label>
+                    
+                    <label class="option-item" th:attr="data-question=${question.id}">
+                        <input type="radio" th:name="'question_' + ${question.id}" th:value="'D'" required>
+                        <span class="option-label">D.</span>
+                        <span class="option-text" th:text="${question.optionD}">Option D</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="btn-submit-quiz">
+                    <i class="fas fa-check-circle"></i> Submit Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/JS/CdnJS/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/JS/CdnJS/bootstrap.bundle.min.js}"></script>
+    <script th:inline="javascript">
+        const durationMinutes = /*[[${quiz.durationMinutes}]]*/ 10;
+        let timeRemaining = durationMinutes * 60;
+        let timerInterval;
+
+        // Start timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up! Submitting quiz...');
+                    document.getElementById('quizForm').dispatchEvent(new Event('submit'));
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            const timerValue = document.getElementById('timerValue');
+            timerValue.textContent = display;
+            
+            if (timeRemaining <= 60) {
+                timerValue.classList.add('danger');
+            } else if (timeRemaining <= 180) {
+                timerValue.classList.add('warning');
+            }
+        }
+
+        // Handle option selection
+        document.querySelectorAll('.option-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question');
+                document.querySelectorAll(`.option-item[data-question="${questionId}"]`).forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('quizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            clearInterval(timerInterval);
+            
+            const quizId = document.getElementById('quizId').value;
+            const formData = new FormData(this);
+            const answers = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key.startsWith('question_')) {
+                    const questionId = key.replace('question_', '');
+                    answers[questionId] = value;
+                }
+            }
+            
+            const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1)) || '';
+            
+            fetch(contextPath + '/quiz/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    quizId: quizId,
+                    answers: answers
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                showResult(result);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to submit quiz. Please try again.');
+            });
+        });
+
+        function showResult(result) {
+            const percentage = result.percentage.toFixed(2);
+            const isPassed = percentage >= 50;
+            
+            const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1)) || '';
+            
+            const modal = document.createElement('div');
+            modal.className = 'result-modal';
+            modal.innerHTML = `
+                <div class="result-content">
+                    <div class="result-icon ${isPassed ? 'success' : 'warning'}">
+                        <i class="fas fa-${isPassed ? 'check-circle' : 'exclamation-circle'}"></i>
+                    </div>
+                    <h2 class="result-title">${isPassed ? 'Congratulations!' : 'Quiz Completed'}</h2>
+                    <div class="result-score">${result.score} / ${result.totalMarks}</div>
+                    <p style="color: #6b7280; margin-bottom: 2rem;">You scored ${percentage}%</p>
+                    
+                    <div class="result-details">
+                        <div class="result-detail-item">
+                            <div class="result-detail-value correct">${result.correct}</div>
+                            <div class="result-detail-label">Correct</div>
+                        </div>
+                        <div class="result-detail-item">
+                            <div class="result-detail-value wrong">${result.wrong}</div>
+                            <div class="result-detail-label">Wrong</div>
+                        </div>
+                    </div>
+                    
+                    <a href="${contextPath}/" class="btn-back-home">Back to Home</a>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Initialize
+        startTimer();
+        updateTimerDisplay()
+    </script>
+    
+    <!-- Footer (Same as Home Page) -->
+    <footer>
+        <div class="container">
+            <p class="mb-0">2025 QuizApp. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

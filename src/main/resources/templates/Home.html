@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizApp</title>
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/all.min.css}">
+     <link rel="stylesheet" th:href="@{/CSS/Custom/Custom_first.css}"> 
+
+    <link rel="stylesheet" th:href="@{/CSS/Custom/ToastNotificationStyles.css}">
+    
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <div class="brand-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                QuizApp
+            </a>
+            
+            <!-- Show different buttons based on authentication -->
+            <div class="d-flex gap-2 align-items-center" sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}" class="btn btn-outline-secondary" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-shield"></i> Admin Login
+                </a>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signinModal">
+                    <i class="fas fa-sign-in-alt"></i> User Sign In
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#signupModal">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+            </div>
+            
+            <!-- Show user info when logged in -->
+            <div class="d-flex gap-2 align-items-center" sec:authorize="isAuthenticated()">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle"></i> 
+                    Welcome, <span sec:authentication="principal.username">User</span>!
+                </span>
+                <a th:href="@{/logout}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+
+     <!-- Toast Container -->
+    <div class="toast-container" aria-live="polite" aria-atomic="true">
+        <!-- Success Toast -->
+        <div th:if="${success}" class="toast custom-toast toast-success show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+            <div class="toast-header-custom">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body-custom" th:text="${success}">
+                Operation completed successfully!
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div th:if="${error}" class="toast custom-toast toast-error show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+            <div class="toast-header-custom">
+                <i class="fas fa-exclamation-circle toast-icon"></i>
+                <strong class="me-auto">Error</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body-custom" th:text="${error}">
+                Something went wrong!
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">
+                Welcome to the<br>
+                <span class="hero-highlight">Future of Innovation</span>
+            </h1>
+            <p class="hero-subtitle">
+                Experience seamless authentication and powerful features designed for modern applications. Join thousands of users today.
+            </p>
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#signupModal">Get Started Free</button>
+                <button class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#signinModal">Sign In</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quizzes Section -->
+    <section class="quizzes-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">QUIZZES <span class="badge-free">Free</span></h2>
+                <p class="section-subtitle">DAILY UPDATED FREE QUIZZES FOR PRACTICE</p>
+            </div>
+            <div id="quizzesContainer" class="row g-4">
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p class="mb-0">2025 QuizApp. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Sign In Modal -->
+    <div class="modal fade" id="signinModal" tabindex="-1" aria-labelledby="signinModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signinModalLabel">User Sign In</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="form-control" placeholder="you@example.com">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="password" class="form-control" placeholder="Enter your password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
+                        <div class="modal-footer-text">
+                            Don't have an account? <a href="#" class="modal-link" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#signupModal">Sign up</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signupModalLabel">Create User Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Sign up as a regular user to attempt quizzes
+                    </p>
+                    <form method="post" th:action="@{/signup}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <div class="input-group">
+                                    <i class="fas fa-user input-icon"></i>
+                                    <input type="text" class="form-control" name="firstname" placeholder="First Name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <div class="input-group">
+                                    <i class="fas fa-user input-icon"></i>
+                                    <input type="text" class="form-control" name="lastname" placeholder="Last Name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mobile Number</label>
+                            <div class="input-group">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input type="tel" class="form-control" name="mobileNo" placeholder="Enter your mobile number">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" class="form-control" name="email" placeholder="you@example.com">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="password" class="form-control" placeholder="Minimum 6 characters">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="confirmpassword" class="form-control" placeholder="Re-enter your password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Create Account</button>
+                        <div class="modal-footer-text">
+                            Already have an account? <a href="#" class="modal-link" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#signinModal">Sign in</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/JS/CdnJS/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/JS/CdnJS/bootstrap.bundle.min.js}"></script>
+    <!-- security scripts -->
+    <!-- <script th:src="@{/JS/SecurityJs/cryptoJS.js}"></script>
+    <script th:src="@{/JS/SecurityJs/aesUtil.js}"></script>
+	<script th:src="@{/JS/SecurityJs/forge.js}"></script>
+	<script th:src="@{/JS/SecurityJs/HybridEncryption.js}"></script>
+    <script th:src="@{/JS/SecurityJs/code.js}"></script> -->
+      <script  th:inline="javascript">
+        // Auto-hide toasts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                var toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+                return toast;
+            });
+            
+            // Load quizzes
+            loadQuizzes();
+        });
+        
+        function loadQuizzes() {
+ const contextPath = /*[[@{/}]]*/ "";
+             fetch(contextPath + 'quizzes')
+                .then(response => response.json())
+                .then(quizzes => {
+                    const container = document.getElementById('quizzesContainer');
+                    if (quizzes.length === 0) {
+                        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">No quizzes available at the moment</p></div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = quizzes.map(quiz => `
+                        <div class="col-md-6 col-lg-3">
+                            <div class="quiz-card">
+                                <div class="quiz-header">
+                                    <i class="fas fa-graduation-cap quiz-icon-left"></i>
+                                    <h5 class="quiz-title">${quiz.quizName}</h5>
+                                    <i class="fas fa-chevron-right quiz-icon-right"></i>
+                                </div>
+                                <div class="quiz-info">
+                                    <div class="info-row">
+                                        <span class="info-label">Question</span>
+                                        <span class="info-value">${quiz.totalQuestions}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Marks</span>
+                                        <span class="info-value">${quiz.totalMarks}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Minute</span>
+                                        <span class="info-value">${quiz.durationMinutes} Min</span>
+                                    </div>
+                                </div>
+                                <button class="btn-start-quiz" onclick="startQuiz(${quiz.id})">Start Quiz</button>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading quizzes:', error);
+                    document.getElementById('quizzesContainer').innerHTML = 
+                        '<div class="col-12 text-center"><p class="text-danger">Failed to load quizzes</p></div>';
+                });
+        }
+        
+        function startQuiz(quizId) {
+            const contextPath = /*[[@{/}]]*/ "";
+            alert(contextPath);
+            window.location.href = contextPath + 'quiz/' + quizId;
+        
+        }
+    </script>
+</body>
+</html>
