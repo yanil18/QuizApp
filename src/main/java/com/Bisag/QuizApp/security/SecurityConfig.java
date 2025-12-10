@@ -22,11 +22,7 @@ import com.Bisag.QuizApp.repository.PortallogRepo;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        @Autowired
-        private CsuserRepo csuserRepo;
-
-        @Autowired
-        private PortallogRepo portallogrepo;
+    
 
         @Autowired
         private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
@@ -47,16 +43,16 @@ public class SecurityConfig {
                                                                 "/error", "/quizzes",
                                                                 "/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.ico")
                                                 .permitAll()
-                                                .requestMatchers("/dash", "/admin/**").authenticated()
+                                                .requestMatchers("/dash", "/admin/**").hasRole("ADMIN")
                                                 .requestMatchers("/quiz/**").authenticated()
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
-                                                .loginPage("/login")
+                                                .loginPage("/")
                                                 .usernameParameter("email")
                                                 .passwordParameter("password")
-                                                .loginProcessingUrl("/admin/login")
-                                                .defaultSuccessUrl("/dash", true)
-                                                .failureUrl("/login?error=true")
+                                                .loginProcessingUrl("/login")
+                                                 .successHandler(customAuthenticationSuccessHandler)
+                                                 .failureHandler(customAuthenticationFailureHandler)
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutSuccessUrl("/")

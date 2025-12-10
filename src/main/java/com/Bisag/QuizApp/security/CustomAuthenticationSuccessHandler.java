@@ -59,7 +59,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
             }.start();
             try {
-                redirectStrategy.sendRedirect(request, response, "/dash");
+                if (csuser.isPresent() && "ADMIN".equalsIgnoreCase(csuser.get().getRole())) {
+                    redirectStrategy.sendRedirect(request, response, "/dash");
+                    return;
+                }
+                redirectStrategy.sendRedirect(request, response, "/");
+             
             } catch (IOException e) {
                     request.getSession().setAttribute("error", "!!! Contact to Administrator !!!");
                redirectStrategy.sendRedirect(request, response, "/");

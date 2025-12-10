@@ -38,6 +38,12 @@ public class QuizAttempt {
     
     @Column(nullable = false)
     private Integer wrongAnswers;
+
+     @Column(nullable = false)
+    private Integer attemptedquestion;
+
+    @Column(nullable = false)
+    private Integer unattemptedquestion;
     
     @CreatedDate
     @Column(updatable = false)

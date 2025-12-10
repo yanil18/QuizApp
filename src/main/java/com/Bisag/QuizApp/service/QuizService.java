@@ -54,6 +54,10 @@ public class QuizService {
         return quizAttemptRepo.findByUserId(userId);
     }
     
+    public QuizAttempt getUserLatestAttempt(Long userId, Long quizId) {
+        return quizAttemptRepo.findByUserIdAndQuizId(userId, quizId).orElse(null);
+    }
+    
     public Quiz uploadQuizFromExcel(MultipartFile file, String quizName, String quizType, 
                                     LocalDate quizDate, Integer durationMinutes) throws Exception {
         Quiz quiz = new Quiz();

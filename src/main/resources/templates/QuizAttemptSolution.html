@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${quiz.quizName} + ' - Solution'">Quiz Solution</title>
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/CSS/CdnCSS/all.min.css}">
+    <link rel="stylesheet" th:href="@{/CSS/Custom/Custom_first.css}">
+    <style>
+        .solution-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .solution-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .solution-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .result-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .summary-item.score {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .summary-item.correct {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .summary-item.wrong {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .summary-item.percentage {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-value.score { color: #2563eb; }
+        .summary-value.correct { color: #10b981; }
+        .summary-value.wrong { color: #ef4444; }
+        .summary-value.percentage { color: #f59e0b; }
+
+        .summary-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .question-solution {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #e5e7eb;
+        }
+
+        .question-solution.correct {
+            border-left-color: #10b981;
+        }
+
+        .question-solution.wrong {
+            border-left-color: #ef4444;
+        }
+
+        .question-solution.not-attempted {
+            border-left-color: #f59e0b;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-number {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .question-status {
+            margin-left: auto;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-wrong {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-not-attempted {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .options-analysis {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option-analysis {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .option-analysis.user-selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-analysis.correct-answer {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .option-analysis.user-selected.correct-answer {
+            border-color: #10b981;
+            background: #dcfce7;
+        }
+
+        .option-analysis.user-selected.wrong {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .option-label {
+            font-weight: 700;
+            margin-right: 0.75rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            color: #374151;
+            flex-shrink: 0;
+        }
+
+        .option-analysis.user-selected .option-label {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .option-analysis.correct-answer .option-label {
+            background: #10b981;
+            color: white;
+        }
+
+        .option-analysis.user-selected.wrong .option-label {
+            background: #ef4444;
+            color: white;
+        }
+
+        .option-text {
+            flex: 1;
+            color: #374151;
+        }
+
+        .option-indicators {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .indicator {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .indicator.your-answer {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .indicator.correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .indicator.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .marks-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .marks-earned {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .marks-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .marks-value.full { color: #10b981; }
+        .marks-value.zero { color: #ef4444; }
+
+        .navigation-buttons {
+            position: sticky;
+            bottom: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-home {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-home:hover {
+            background: #1d4ed8;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-retake {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-retake:hover {
+            background: #059669;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body style="background: #f9fafb;">
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <div class="brand-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                QuizApp
+            </a>
+            
+            <!-- Show user info when logged in -->
+            <div class="d-flex gap-2 align-items-center">
+                <span class="text-muted" style="font-size: 0.9rem;">
+                    <i class="fas fa-user-circle"></i> 
+                    Welcome, <span sec:authentication="principal.username">User</span>!
+                </span>
+                <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Solution Header -->
+    <section class="solution-header">
+        <div class="container text-center">
+            <h1 class="solution-title" th:text="${quiz.quizName} + ' - Solution'">Quiz Solution</h1>
+            <p class="solution-subtitle">Review your answers and learn from the correct solutions</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Result Summary -->
+        <div class="result-summary">
+            <h3 style="text-align: center; margin-bottom: 1rem; color: #1f2937;">Your Performance Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item score">
+                    <div class="summary-value score" th:text="${result.score} + ' / ' + ${result.totalMarks}">15 / 20</div>
+                    <div class="summary-label">Score</div>
+                </div>
+                <div class="summary-item correct">
+                    <div class="summary-value correct" th:text="${result.correct}">15</div>
+                    <div class="summary-label">Correct Answers</div>
+                </div>
+                <div class="summary-item wrong">
+                    <div class="summary-value wrong" th:text="${result.wrong}">3</div>
+                    <div class="summary-label">Wrong Answers</div>
+                </div>
+                <div class="summary-item percentage">
+                    <div class="summary-value percentage" th:text="${#numbers.formatDecimal(result.percentage, 1, 1)} + '%'">75.0%</div>
+                    <div class="summary-label">Percentage</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions with Solutions -->
+        <div th:each="question, iterStat : ${questions}" 
+             class="question-solution"
+             th:classappend="${userAnswers.get(question.id) != null ? (userAnswers.get(question.id).equals(question.correctAnswer) ? 'correct' : 'wrong') : 'not-attempted'}">
+            
+            <div class="question-header">
+                <span class="question-number" th:text="'Q' + (${iterStat.index} + 1)">Q1</span>
+                <div class="question-status"
+                     th:classappend="${userAnswers.get(question.id) != null ? (userAnswers.get(question.id).equals(question.correctAnswer) ? 'status-correct' : 'status-wrong') : 'status-not-attempted'}"
+                     th:text="${userAnswers.get(question.id) != null ? (userAnswers.get(question.id).equals(question.correctAnswer) ? 'Correct' : 'Wrong') : 'Not Attempted'}">
+                    Correct
+                </div>
+            </div>
+
+            <div class="question-text" th:text="${question.questionText}">
+                What is the capital of France?
+            </div>
+
+            <div class="options-analysis">
+                <!-- Option A -->
+                <div class="option-analysis"
+                     th:classappend="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('A') ? 'user-selected' : ''} + ' ' + ${question.correctAnswer.equals('A') ? 'correct-answer' : ''} + ' ' + ${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('A') and !question.correctAnswer.equals('A') ? 'wrong' : ''}">
+                    <div class="option-label">A</div>
+                    <div class="option-text" th:text="${question.optionA}">Paris</div>
+                    <div class="option-indicators">
+                        <span th:if="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('A')}" 
+                              class="indicator your-answer">Your Answer</span>
+                        <span th:if="${question.correctAnswer.equals('A')}" 
+                              class="indicator correct">Correct</span>
+                    </div>
+                </div>
+
+                <!-- Option B -->
+                <div class="option-analysis"
+                     th:classappend="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('B') ? 'user-selected' : ''} + ' ' + ${question.correctAnswer.equals('B') ? 'correct-answer' : ''} + ' ' + ${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('B') and !question.correctAnswer.equals('B') ? 'wrong' : ''}">
+                    <div class="option-label">B</div>
+                    <div class="option-text" th:text="${question.optionB}">London</div>
+                    <div class="option-indicators">
+                        <span th:if="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('B')}" 
+                              class="indicator your-answer">Your Answer</span>
+                        <span th:if="${question.correctAnswer.equals('B')}" 
+                              class="indicator correct">Correct</span>
+                    </div>
+                </div>
+
+                <!-- Option C -->
+                <div class="option-analysis"
+                     th:classappend="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('C') ? 'user-selected' : ''} + ' ' + ${question.correctAnswer.equals('C') ? 'correct-answer' : ''} + ' ' + ${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('C') and !question.correctAnswer.equals('C') ? 'wrong' : ''}">
+                    <div class="option-label">C</div>
+                    <div class="option-text" th:text="${question.optionC}">Berlin</div>
+                    <div class="option-indicators">
+                        <span th:if="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('C')}" 
+                              class="indicator your-answer">Your Answer</span>
+                        <span th:if="${question.correctAnswer.equals('C')}" 
+                              class="indicator correct">Correct</span>
+                    </div>
+                </div>
+
+                <!-- Option D -->
+                <div class="option-analysis"
+                     th:classappend="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('D') ? 'user-selected' : ''} + ' ' + ${question.correctAnswer.equals('D') ? 'correct-answer' : ''} + ' ' + ${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('D') and !question.correctAnswer.equals('D') ? 'wrong' : ''}">
+                    <div class="option-label">D</div>
+                    <div class="option-text" th:text="${question.optionD}">Madrid</div>
+                    <div class="option-indicators">
+                        <span th:if="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals('D')}" 
+                              class="indicator your-answer">Your Answer</span>
+                        <span th:if="${question.correctAnswer.equals('D')}" 
+                              class="indicator correct">Correct</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marks Information -->
+            <div class="marks-info">
+                <span class="marks-earned">Marks Earned:</span>
+                <span class="marks-value"
+                      th:classappend="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals(question.correctAnswer) ? 'full' : 'zero'}"
+                      th:text="${userAnswers.get(question.id) != null and userAnswers.get(question.id).equals(question.correctAnswer) ? question.marks + ' / ' + question.marks : '0 / ' + question.marks}">
+                    1 / 1
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons">
+            <a th:href="@{/}" class="btn-home">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a th:href="@{'/quiz/' + ${quiz.id}}" class="btn-retake">
+                <i class="fas fa-redo"></i> Retake Quiz
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="margin-top: 3rem;">
+        <div class="container">
+            <p class="mb-0">© 2025 QuizApp. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/JS/CdnJS/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/JS/CdnJS/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
